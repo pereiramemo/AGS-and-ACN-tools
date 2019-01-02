@@ -4,3 +4,12 @@ Here, we present the ags.sh and acn.sh tools dedicated to the computation of the
 ### Citation
 Pereira-Flores, E., Glöckner F. O., and Fernandez-Guerra A. (2019). _Fast and accurate estimation of the average genomes size and 16S rRNA average copy number in metagenomic data._ Under review.
 
+### Installation
+Before running ags.sh and acn.sh tools, it is necessary to install [docker](https://www.docker.com/).
+
+Then just clone the GitHub repository:
+```
+git clone git@github.com:pereiramemo/AGS-and-ACN-tools.git
+```
+
+The ags.sh and acn.sh are distrubuted in two different docker images which will be downloaded automatically from [dockerhub](https://hub.docker.com/)the first time you run the run_ags.sh and run_acn.sh scripts.
