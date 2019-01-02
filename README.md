@@ -14,4 +14,4 @@ git clone git@github.com:pereiramemo/AGS-and-ACN-tools.git
 
 The ags.sh and acn.sh are distrubuted in two different docker images which will be downloaded automatically from [dockerhub](https://hub.docker.com/) the first time you run the run_ags.sh and run_acn.sh scripts.
 
-### Go the the [wiki](https://github.com/pereiramemo/BiG-MEx/wiki) page to find the documentation, more in detail installation instructions, and getting started tutorial.
+### Go the the [wiki](https://github.com/pereiramemo/AGS-and-ACN-tools/wiki) page to find the documentation, more in detail installation instructions, and getting started tutorial.
