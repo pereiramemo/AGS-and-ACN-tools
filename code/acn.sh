@@ -275,7 +275,7 @@ fi
 
 if [[ -z "${SAMPLE}" && -f "${INPUT_FNA}" ]]; then
   SAMPLE=$(basename  "${INPUT_FNA}" | \
-           sed -e "s/.fa$//" -e "s/.faa$//" -e "s/.fasta$//")
+           sed -e "s/.fa$//" -e "s/.fna$//" -e "s/.fasta$//")
 fi
 
 if [[ -z "${SAMPLE}" && ! -f "${INPUT_FNA}" && -f "${INPUT_SMRNA}" ]]; then

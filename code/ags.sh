@@ -259,7 +259,7 @@ fi
 # define SAMPLE as INPUT_FNA file name (is $SAMPLE is empty)
 if [[ -z "${SAMPLE}" && ! -f "${INPUT_ORFS}" && -f "${INPUT_FNA}" ]]; then
   SAMPLE=$(basename  "${INPUT_FNA}" | \
-           sed -e "s/.fa$//" -e  "s/.fasta$//")
+           sed -e "s/.fa$//" -e "s/.fna$//" -e  "s/.fasta$//")
 fi
 
 if [[ -z "${SAVE_COMPLEMENTARY_DATA}" ]]; then
