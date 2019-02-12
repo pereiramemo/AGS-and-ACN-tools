@@ -338,9 +338,7 @@ fi
 
 # functions
 function cleanup {
-rm "${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}.blast"
-rm "${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}.log"
-rm "${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}_acn.tsv"
+rm -r "${THIS_JOB_TMP_DIR}"
 }
 
 # trap

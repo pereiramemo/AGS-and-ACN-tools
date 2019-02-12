@@ -215,13 +215,13 @@ done
 
 if [[ ! -f "${INPUT_FNA}" && ! -f "${INPUT_ORFS}" ]]; then
   echo "Please input a fasta file (fna or faa)."
-  echo  "See: ags.sh --help"
+  echo "See: ags.sh --help"
   exit 1
 fi
 
 if [[ ! -f "${INPUT_FNA}" && -z "${BP_TOTAL}" ]]; then
   echo "Please input the fna file or the total number of base pairs (i.e., --bp_total)."
-  echo  "See: ags.sh --help"
+  echo "See: ags.sh --help"
   exit 1
 fi
 
@@ -279,9 +279,7 @@ fi
 ###############################################################################
 
 function cleanup {
-rm "${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}.uout"
-rm "${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}_single_cogs_count.tsv"
-rm "${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}_ags.tsv"
+rm -r "${THIS_JOB_TMP_DIR}"
 }
 
 # trap
