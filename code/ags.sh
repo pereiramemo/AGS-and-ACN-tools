@@ -418,7 +418,7 @@ fi
 
 COUNTS="${THIS_JOB_TMP_DIR}/${OUTPUT_PREFIX}"_single_cogs_count.tsv
 
-cut -f3,4 -d"," "${UOUT}" | sed "s/;//" | \
+cut -f3,4 -d"," "${UOUT}" | \
 awk 'BEGIN {OFS="\t"; FS=","} {
      array_length[$2] = $1 + array_length[$2]
 } END {

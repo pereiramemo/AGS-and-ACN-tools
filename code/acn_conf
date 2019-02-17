@@ -1,0 +1,23 @@
+# folders
+SOFTWARE_DIR="/bioinfo/software/"
+RESOURCES_DIR="/bioinfo/resources/"
+OUTDIR_LOCAL="/output/"
+INPUT="/input/"
+SCRATCH="/scratch/"
+
+# tools
+sortmerna_version="2.1b"
+sortmerna="${SOFTWARE_DIR}/sortmerna-${sortmerna_version}/sortmerna"
+#r_version="3.4.1"
+#r_interpreter="${BIN}/R-${r_version}/bin/R"
+r_interpreter="/usr/bin/R"
+
+# files
+DB="${SOFTWARE_DIR}/sortmerna-${sortmerna_version}/"
+REF="${DB}/rRNA_databases/silva-bac-16s-id90.fasta,\
+${DB}/index/silva-bac-16s-db:${DB}/rRNA_databases/silva-arc-16s-id95.fasta,\
+${DB}/index/silva-arc-16s-db"
+
+# parameters
+SMRNA_MEM="1000"
+
