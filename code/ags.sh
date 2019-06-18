@@ -22,7 +22,7 @@ Usage: ./run_ags.sh <input fna> <input orfs> <output directory> <options>
 -h, --help  print this help
 -b, --bp_total total number of base pairs. It will be computed if not given
 -lf, --min_length  minimum length used to filter reads by length
--lt, --max_length  maximum length used to trim reads
+-lt, --max_length  maximum length used to trim reads (from the 3' end)
 -o, --output_prefix prefix output name (default sample name)
 -s, --sample_name sample name (default input file name)
 -scd, --save_complementary_data t or f, save data used to compute the average genome size (default f)
@@ -332,7 +332,7 @@ if [[ -f "${INPUT_FNA}" ]]; then
 
     INPUT_FNA_FBL="${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}"_FBL.fna
 
-    echo "Filtering by length ..." 2>&1 | handleoutput
+    echo "Filtering and/or trimming reads ..." 2>&1 | handleoutput
 
     "${bbduk}" \
     overwrite=t \
