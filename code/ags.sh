@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# 1. Set environment
+# 1. set environment
 ###############################################################################
 
 set -o pipefail
@@ -15,13 +15,14 @@ source /bioinfo/software/conf
 show_usage(){
   cat <<EOF
 Usage: ./run_ags.sh <input fna> <input orfs> <output directory> <options>
-  [-h|--help] [-b|-bp_total INT] [-l|--length INT] [-o|--output_prefix CHAR] 
-  [-s|--sample_name CHAR] [-scd|--save_completentary_data t|f] [-t|--nslots INT] 
-  [-v|--verbose t|f] [-w|--overwrite t|f] 
+  [-h|--help] [-b|-bp_total INT] [-lf|--min_length INT] [-lt|--max_length INT]
+  [-o|--output_prefix CHAR] [-s|--sample_name CHAR] [-scd|--save_completentary_data t|f]
+  [-t|--nslots INT] [-v|--verbose t|f] [-w|--overwrite t|f]
 
 -h, --help  print this help
 -b, --bp_total total number of base pairs. It will be computed if not given
--l, --length  minimum length used to filter by length
+-lf, --min_length  minimum length used to filter reads by length
+-lt, --max_length  maximum length used to trim reads
 -o, --output_prefix prefix output name (default sample name)
 -s, --sample_name sample name (default input file name)
 -scd, --save_complementary_data t or f, save data used to compute the average genome size (default f)
@@ -88,16 +89,29 @@ while :; do
   printf 'Using default environment.\n' >&2
   ;;
 #############
-  -l|--length)
+  -lt|--min_length)
   if [[ -n "${2}" ]]; then
-   LENGTH="${2}"
+   MIN_LENGTH="${2}"
    shift
   fi
   ;;
-  --length=?*)
-  LENGTH="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  --min_length=?*)
+  MIN_LENGTH="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
-  --length=) # Handle the empty case
+  --min_length=) # Handle the empty case
+  printf 'Using default environment.\n' >&2
+  ;;
+#############
+  -lt|--max_length)
+  if [[ -n "${2}" ]]; then
+   MAX_LENGTH="${2}"
+   shift
+  fi
+  ;;
+  --max_length=?*)
+  MAX_LENGTH="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  ;;
+  --max_length=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;;
 #############
@@ -121,7 +135,7 @@ while :; do
    fi
   ;;
   --outdir=?*)
-  OUTDIR_EXPORT="${1#*=}" # Delete everything up to "=" and assign the 
+  OUTDIR_EXPORT="${1#*=}" # Delete everything up to "=" and assign the
                           # remainder.
   ;;
   --outdir=) # Handle the empty case
@@ -181,7 +195,7 @@ while :; do
   --verbose=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;;
-#############  
+#############
   -w|--overwrite)
    if [[ -n "${2}" ]]; then
      OVERWRITE="${2}"
@@ -283,14 +297,14 @@ rm -r "${THIS_JOB_TMP_DIR}"
 }
 
 # trap
-trap cleanup SIGINT SIGKILL SIGTERM ERR
+# trap cleanup SIGINT SIGKILL SIGTERM ERR
 
 if [[ "${VERBOSE}" == "t" ]]; then
   function handleoutput {
     cat /dev/stdin | \
-    while read STDIN; do 
+    while read STDIN; do
       echo "${STDIN}"
-    done  
+    done
   }
 else
   function handleoutput {
@@ -302,31 +316,47 @@ fi
 # 7. Filter by length
 ###############################################################################
 
-if [[ -n "${LENGTH}" && -f "${INPUT_FNA}" ]]; then
+if [[ -f "${INPUT_FNA}" ]]; then
 
-  INPUT_FNA_FBL="${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}"_FBL.fna
+  if [[ -n "${MAX_LENGTH}" || -n "${MIN_LENGTH}" ]]; then
 
-  echo "Filtering by length ..." 2>&1 | handleoutput
-  
-  "${bbduk}" \
-  overwrite=t \
-  out="${INPUT_FNA_FBL}" \
-  in="${INPUT_FNA}" \
-  minlength="${LENGTH}" \
-  threads="${NSLOTS}" 2>&1 | handleoutput
+    if [[ -z "${MIN_LENGTH}" ]]; then
+      MIN_LENGTH=10
+    fi
 
-  if [[ $? != 0 ]]; then
-    echo "bbduk filterbylength failed"
-    exit 1
+    if [[ -n "${MAX_LENGTH}" ]]; then
+      MAX_LENGTH="$(( ${MAX_LENGTH} -1))"
+    else
+      MAX_LENGTH=-1
+    fi
+
+    INPUT_FNA_FBL="${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}"_FBL.fna
+
+    echo "Filtering by length ..." 2>&1 | handleoutput
+
+    "${bbduk}" \
+    overwrite=t \
+    out="${INPUT_FNA_FBL}" \
+    in="${INPUT_FNA}" \
+    minlength="${MIN_LENGTH}" \
+    forcetrimright="${MAX_LENGTH}" \
+    threads="${NSLOTS}" 2>&1 | handleoutput
+
+    if [[ $? != 0 ]]; then
+      echo "bbduk trim and filter by length failed"
+      exit 1
+    fi
+
+    INPUT_FNA="${INPUT_FNA_FBL}"
+
+    if [[ ! -f "${INPUT_FNA}" ]]; then
+      echo "bbduk trim and filter by length failed"
+      exit 1
+    fi
+
+    BBDUKFILTER=1
+
   fi
-
-  INPUT_FNA="${INPUT_FNA_FBL}"
-  
-  if [[ ! -f "${INPUT_FNA}" ]]; then
-    echo "bbduk filterbylength failed"
-    exit 1
-  fi 
-
 fi
 
 ###############################################################################
@@ -337,19 +367,19 @@ fi
 if [[ -f "${INPUT_FNA}"  && -z "${BP_TOTAL}" ]]; then
 
   echo "Counting bps ..." 2>&1 | handleoutput
-  
+
   BP_TOTAL=$(egrep -v "^>" "${INPUT_FNA}" | wc | awk '{ print $3-$1}')
 
   if [[ $? != 0 ]]; then
     echo "compute average read length failed"
     exit 1
   fi
-  
+
   if [[ -z "${BP_TOTAL}" ]]; then
     echo "compute average read length failed"
     exit 1
   fi
-  
+
 fi
 
 ###############################################################################
@@ -368,7 +398,7 @@ if [[ ! -f "${INPUT_ORFS}" ]]; then
   -w 0 \
   -r "${FGSP_TRAIN_DIR}" \
   -t illumina_5 \
-  -m 2048 \
+  -m 4096 \
   -p "${NSLOTS}" 2>&1 | handleoutput
 
   if [[ $? != 0 ]]; then
@@ -377,7 +407,7 @@ if [[ ! -f "${INPUT_ORFS}" ]]; then
   fi
 
   INPUT_ORFS="${ORFS_OUT}".faa
-  
+
    if [[ ! -f "${INPUT_ORFS}" ]]; then
     echo "FragGeneScanPlus failed"
     exit 1
@@ -418,14 +448,36 @@ fi
 
 COUNTS="${THIS_JOB_TMP_DIR}/${OUTPUT_PREFIX}"_single_cogs_count.tsv
 
-cut -f3,4 -d"," "${UOUT}" | \
+cut -f1,3,4,5 -d"," "${UOUT}" | \
 awk 'BEGIN {OFS="\t"; FS=","} {
-     array_length[$2] = $1 + array_length[$2]
+
+  if (array_score[$1]) {
+
+    if ($4 > array_score[$1]) {
+      array_score[$1] = $4
+      array_line[$1, $3] = $2
+    }
+
+  } else {
+
+   array_score[$1] = $4
+   array_line[$1, $3] = $2
+
+  }
+
 } END {
+
   printf "%s\t%s\n", "cog","cov"
+
+  for (combined in array_line) {
+    split(combined, separate, SUBSEP)
+    array_length[separate[2]]= array_length[separate[2]] + array_line[combined]
+  }
+
   for ( c in array_length ) {
     printf "%s\t%s\n", c,array_length[c]
   }
+
 }' > "${COUNTS}"
 
 if [[ $? != 0 ]]; then
@@ -464,7 +516,7 @@ fi
   x <- COGS_TBL[i,"cov"]/COG_LENGTHS\$value
   cov_mean <- mean(x)
   COMPUT_AGS <- round((BP_TOTAL)/cov_mean, digits = 3)
-  COMPUT_NG <- round(cov_mean, digits = 3) 
+  COMPUT_NG <- round(cov_mean, digits = 3)
 
   OUTPUT <- data.frame(Sample = SAMPLE, AGS = COMPUT_AGS, NGs = COMPUT_NG, BPs = BP_TOTAL)
 
@@ -483,7 +535,7 @@ fi
 if [[ ! -f ${THIS_JOB_TMP_DIR}/${OUTPUT_PREFIX}_ags.tsv ]]; then
   echo "r code average genome size computation failed"
   exit 1
-fi  
+fi
 
 ###############################################################################
 # 13. Clean up
@@ -493,8 +545,8 @@ if [[ "${SAVE_COMPLEMENTARY_DATA}" =~ [F|f] ]]; then
 
   rm "${COUNTS}"
   rm "${UOUT}"
-  
-  if [[ -n "${LENGTH}" && -f "${INPUT_FNA}" ]]; then
+
+  if [[ -n "${BBDUKFILTER}" && -f "${INPUT_FNA}" ]]; then
     rm "${INPUT_FNA}"
   fi
 
