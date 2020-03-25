@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# 1. set environment
+# 1. Set environment
 ###############################################################################
 
 set -o pipefail
@@ -15,21 +15,21 @@ source /bioinfo/software/conf
 show_usage(){
   cat <<EOF
 Usage: ./run_ags.sh <input fna> <input orfs> <output directory> <options>
+  [-h|--help] [-b|-bp_total INT] [-l|--length INT] [-o|--output_prefix CHAR] 
+  [-s|--sample_name CHAR] [-scd|--save_completentary_data t|f] [-t|--nslots INT] 
+  [-v|--verbose t|f] [-w|--overwrite t|f] 
 
---help                          print this help
---bp_total NUM                  total number of base pairs. It will be computed if not given
---max_length NUM                maximum length used to trim reads (from the 3' end)
---min_length NUM                minimum length used to filter reads by length
---nslots NUM                    number of slots (used in BBDuk, UProC, and FragGeneScanPlusPlus) (default 2)
---output_prefix CHAR            prefix output name (default sample name)
---overwrite t|f                 overwrite current directory (default f)
---sample_name                   sample name (default input file name)
---save_complementary_data t|f   save data used to compute the average genome size (default f)
---train_file_name CHAR          file name containing the model parameters (used in FragGeneScanPlusPlus) (default illumina_5)
---verbose t|f                   run verbosely (default f)
+-h, --help  print this help
+-b, --bp_total total number of base pairs. It will be computed if not given
+-l, --length  minimum length used to filter by length
+-o, --output_prefix prefix output name (default sample name)
+-s, --sample_name sample name (default input file name)
+-scd, --save_complementary_data t or f, save data used to compute the average genome size (default f)
+-t, --nslots  number of slots (used in UProC and FraggeneScanPlus) (default 2)
+-v, --verbose   t or f, run verbosely (default f)
+-w, --overwrite t or f, overwrite current directory (default f)
 
-
-<input orfs>: ORFs fasta file used to annotate the single-copy genes
+<input orfs>: ORFs fasta file used to annotate the single copy genes
 <input fna>: Fasta file used to predict ORFs (if no ORFs file is given); This file will be also used to compute the total number of base pairs
 
 EOF
@@ -41,15 +41,17 @@ EOF
 
 while :; do
   case "${1}" in
-    --help) # Call a "show_help" function to display a synopsis, then exit.
+
+    -h|-\?|--help) # Call a "show_help" function to display a synopsis, then
+                   # exit.
     show_usage
     exit 1;
     ;;
 #############
-  --bp_total)
+  -b|--bp_total)
   if [[ -n "${2}" ]]; then
-    BP_TOTAL="${2}"
-    shift
+   BP_TOTAL="${2}"
+   shift
   fi
   ;;
   --bp_total=?*)
@@ -59,10 +61,10 @@ while :; do
   printf 'Using default environment.\n' >&2
   ;;
 #############
-  --input_orfs)
+  -io|--input_orfs)
   if [[ -n "${2}" ]]; then
-    INPUT_ORFS="${2}"
-    shift
+   INPUT_ORFS="${2}"
+   shift
   fi
   ;;
   --input_orfs=?*)
@@ -73,10 +75,10 @@ while :; do
   exit 1
   ;;
 #############
-  --input_fna)
+  -ia|--input_fna)
   if [[ -n "${2}" ]]; then
-    INPUT_FNA="${2}"
-    shift
+   INPUT_FNA="${2}"
+   shift
   fi
   ;;
   --input_fna=?*)
@@ -86,33 +88,73 @@ while :; do
   printf 'Using default environment.\n' >&2
   ;;
 #############
-  --max_length)
+  -l|--length)
   if [[ -n "${2}" ]]; then
-    MAX_LENGTH="${2}"
-    shift
+   LENGTH="${2}"
+   shift
   fi
   ;;
-  --max_length=?*)
-  MAX_LENGTH="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  --length=?*)
+  LENGTH="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
-  --max_length=) # Handle the empty case
+  --length=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;;
 #############
-  --min_length)
+  -o|--output_prefix)
   if [[ -n "${2}" ]]; then
-    MIN_LENGTH="${2}"
-    shift
+   OUTPUT_PREFIX="${2}"
+   shift
   fi
   ;;
-  --min_length=?*)
-  MIN_LENGTH="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  --output_prefix=?*)
+  OUTPUT_PREFIX="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
-  --min_length=) # Handle the empty case
-  printf 'Using default environment.\n' >&2
-  ;;  
+  --output_prefix=) # Handle the empty case
+   printf 'Using default environment.\n' >&2
+  ;;
 #############
-  --nslots)
+  -od|--outdir)
+   if [[ -n "${2}" ]]; then
+     OUTDIR_EXPORT="${2}"
+     shift
+   fi
+  ;;
+  --outdir=?*)
+  OUTDIR_EXPORT="${1#*=}" # Delete everything up to "=" and assign the 
+                          # remainder.
+  ;;
+  --outdir=) # Handle the empty case
+  printf 'Using default environment.\n' >&2
+  ;;
+#############
+  -s|--sample_name)
+  if [[ -n "${2}" ]]; then
+   SAMPLE="${2}"
+   shift
+  fi
+  ;;
+  --sample_name=?*)
+  SAMPLE="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  ;;
+  --sample_name=) # Handle the empty case
+  printf 'Using default environment.\n' >&2
+  ;;
+#############
+  -scd|--save_complementary_data)
+  if [[ -n "${2}" ]]; then
+   SAVE_COMPLEMENTARY_DATA="${2}"
+   shift
+  fi
+  ;;
+  --save_complementary_data=?*)
+  SAVE_COMPLEMENTARY_DATA="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  ;;
+  --save_complementary_data=) # Handle the empty case
+  printf 'Using default environment.\n' >&2
+  ;;
+ #############
+  -t|--nslots)
    if [[ -n "${2}" ]]; then
      NSLOTS="${2}"
      shift
@@ -124,114 +166,47 @@ while :; do
   ;;
   --nslots=) # Handle the empty case
   printf 'Using default environment.\n' >&2
-  ;;  
-#############
-  --output_prefix)
-  if [[ -n "${2}" ]]; then
-    OUTPUT_PREFIX="${2}"
-    shift
-  fi
-  ;;
-  --output_prefix=?*)
-  OUTPUT_PREFIX="${1#*=}" # Delete everything up to "=" and assign the 
-                          # remainder.
-  ;;
-  --output_prefix=) # Handle the empty case
-  printf 'Using default environment.\n' >&2
   ;;
 #############
-  --outdir)
-  if [[ -n "${2}" ]]; then
-    OUTDIR_EXPORT="${2}"
-    shift
+-v|--verbose)
+   if [[ -n "${2}" ]]; then
+     VERBOSE="${2}"
+     shift
    fi
   ;;
-  --outdir=?*)
-  OUTDIR_EXPORT="${1#*=}" # Delete everything up to "=" and assign the
-                          # remainder.
-  ;;
-  --outdir=) # Handle the empty case
-  printf 'Using default environment.\n' >&2
-  ;;
-#############
-  --sample_name)
-  if [[ -n "${2}" ]]; then
-    SAMPLE="${2}"
-    shift
-  fi
-  ;;
-  --sample_name=?*)
-  SAMPLE="${1#*=}" # Delete everything up to "=" and assign the remainder.
-  ;;
-  --sample_name=) # Handle the empty case
-  printf 'Using default environment.\n' >&2
-  ;;
-#############
-  --save_complementary_data)
-  if [[ -n "${2}" ]]; then
-    SAVE_COMPLEMENTARY_DATA="${2}"
-    shift
-  fi
-  ;;
-  --save_complementary_data=?*)
-  SAVE_COMPLEMENTARY_DATA="${1#*=}" # Delete everything up to "=" and assign the 
-                                    # remainder.
-  ;;
-  --save_complementary_data=) # Handle the empty case
-  printf 'Using default environment.\n' >&2
-  ;;
-#############
-  --train_file_name)
-  if [[ -n "${2}" ]]; then
-    TRAIN_FILE_NAME="${2}"
-    shift
-  fi
-  ;;
-  --train_file_name=?*)
-  TRAIN_FILE_NAME="${1#*=}" # Delete everything up to "=" and assign the 
-                                    # remainder.
-  ;;
-  --train_file_name=) # Handle the empty case
-  printf 'Using default environment.\n' >&2
-  ;;  
-#############
-  --verbose)
-  if [[ -n "${2}" ]]; then
-    VERBOSE="${2}"
-    shift
-  fi
-  ;;
   --verbose=?*)
-  VERBOSE="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  VERBOSE="${1#*=}" # Delete everything up to "=" and assign the
+                    # remainder.
   ;;
   --verbose=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;;
-#############
-  --overwrite)
-  if [[ -n "${2}" ]]; then
-    OVERWRITE="${2}"
-    shift
-  fi
+#############  
+  -w|--overwrite)
+   if [[ -n "${2}" ]]; then
+     OVERWRITE="${2}"
+     shift
+   fi
   ;;
   --overwrite=?*)
-  OVERWRITE="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  OVERWRITE="${1#*=}" # Delete everything up to "=" and assign the
+# remainder.
   ;;
   --overwrite=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;;
-############ End of all options.
-  --)       
-  shift
-  break
-  ;;
-  -?*)
-  printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
-  ;;
-  *) # Default case: If no more options, then break out of the loop.
-  break
-  esac
-  shift
+############
+    --)              # End of all options.
+    shift
+    break
+    ;;
+    -?*)
+    printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+    ;;
+    *) # Default case: If no more options then break out of the loop.
+    break
+    esac
+    shift
 done
 
 ###############################################################################
@@ -239,14 +214,14 @@ done
 ###############################################################################
 
 if [[ ! -f "${INPUT_FNA}" && ! -f "${INPUT_ORFS}" ]]; then
-  echo "Please input a fasta file (fna or faa)"
-  echo "See: run_ags.sh . . --help"
+  echo "Please input a fasta file (fna or faa)."
+  echo "See: ags.sh --help"
   exit 1
 fi
 
 if [[ ! -f "${INPUT_FNA}" && -z "${BP_TOTAL}" ]]; then
-  echo "Please input the fna file or the total number of base pairs (i.e., --bp_total)"
-  echo "See: run_ags.sh . . --help"
+  echo "Please input the fna file or the total number of base pairs (i.e., --bp_total)."
+  echo "See: ags.sh --help"
   exit 1
 fi
 
@@ -256,7 +231,7 @@ fi
 
 if [[ -d "${OUTDIR_LOCAL}/${OUTDIR_EXPORT}" ]]; then
   if [[ "${OVERWRITE}" != "t" ]]; then
-    echo "${OUTDIR_EXPORT} already exists. Use \"--overwrite t\" to overwrite"
+    echo "${OUTDIR_EXPORT} already exist. Use \"--overwrite t\" to overwrite."
     exit
   fi
 fi
@@ -299,10 +274,6 @@ if [[ -z "${NSLOTS}" ]]; then
   NSLOTS=2
 fi
 
-if [[ -z "${TRAIN_FILE_NAME}" ]]; then
-  TRAIN_FILE_NAME="illumina_5"
-fi  
-
 ###############################################################################
 # 6. Define functions
 ###############################################################################
@@ -312,14 +283,14 @@ rm -r "${THIS_JOB_TMP_DIR}"
 }
 
 # trap
-# trap cleanup SIGINT SIGKILL SIGTERM ERR
+trap cleanup SIGINT SIGKILL SIGTERM ERR
 
 if [[ "${VERBOSE}" == "t" ]]; then
   function handleoutput {
     cat /dev/stdin | \
-    while read STDIN; do
+    while read STDIN; do 
       echo "${STDIN}"
-    done
+    done  
   }
 else
   function handleoutput {
@@ -331,47 +302,31 @@ fi
 # 7. Filter by length
 ###############################################################################
 
-if [[ -f "${INPUT_FNA}" ]]; then
+if [[ -n "${LENGTH}" && -f "${INPUT_FNA}" ]]; then
 
-  if [[ -n "${MAX_LENGTH}" || -n "${MIN_LENGTH}" ]]; then
+  INPUT_FNA_FBL="${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}"_FBL.fna
 
-    if [[ -z "${MIN_LENGTH}" ]]; then
-      MIN_LENGTH=10
-    fi
+  echo "Filtering by length ..." 2>&1 | handleoutput
+  
+  "${bbduk}" \
+  overwrite=t \
+  out="${INPUT_FNA_FBL}" \
+  in="${INPUT_FNA}" \
+  minlength="${LENGTH}" \
+  threads="${NSLOTS}" 2>&1 | handleoutput
 
-    if [[ -n "${MAX_LENGTH}" ]]; then
-      MAX_LENGTH="$(( ${MAX_LENGTH} -1))"
-    else
-      MAX_LENGTH=-1
-    fi
-
-    INPUT_FNA_FBL="${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}"_FBL.fna
-
-    echo "Filtering and/or trimming reads ..." 2>&1 | handleoutput
-
-    "${bbduk}" \
-    overwrite=t \
-    out="${INPUT_FNA_FBL}" \
-    in="${INPUT_FNA}" \
-    minlength="${MIN_LENGTH}" \
-    forcetrimright="${MAX_LENGTH}" \
-    threads="${NSLOTS}" 2>&1 | handleoutput
-
-    if [[ $? != 0 ]]; then
-      echo "BBDuk trim and/or filter by length failed"
-      exit 1
-    fi
-
-    INPUT_FNA="${INPUT_FNA_FBL}"
-
-    if [[ ! -f "${INPUT_FNA}" ]]; then
-      echo "BBDuk trim and/or filter by length failed (no output file generated)"
-      exit 1
-    fi
-
-    BBDUKFILTER=1
-
+  if [[ $? != 0 ]]; then
+    echo "bbduk filterbylength failed"
+    exit 1
   fi
+
+  INPUT_FNA="${INPUT_FNA_FBL}"
+  
+  if [[ ! -f "${INPUT_FNA}" ]]; then
+    echo "bbduk filterbylength failed"
+    exit 1
+  fi 
+
 fi
 
 ###############################################################################
@@ -381,20 +336,20 @@ fi
 # count the total number of bp, if not given
 if [[ -f "${INPUT_FNA}"  && -z "${BP_TOTAL}" ]]; then
 
-  echo "Counting bp ..." 2>&1 | handleoutput
-
+  echo "Counting bps ..." 2>&1 | handleoutput
+  
   BP_TOTAL=$(egrep -v "^>" "${INPUT_FNA}" | wc | awk '{ print $3-$1}')
 
   if [[ $? != 0 ]]; then
-    echo "Count bp failed"
+    echo "compute average read length failed"
     exit 1
   fi
-
+  
   if [[ -z "${BP_TOTAL}" ]]; then
-    echo "Count bp failed (no count number generated)"
+    echo "compute average read length failed"
     exit 1
   fi
-
+  
 fi
 
 ###############################################################################
@@ -407,24 +362,24 @@ if [[ ! -f "${INPUT_ORFS}" ]]; then
 
   ORFS_OUT="${THIS_JOB_TMP_DIR}"/"${OUTPUT_PREFIX}"_orfs
 
-  "${fraggenescanplusplus}" \
+  "${fraggenescanplus}" \
   -s "${INPUT_FNA}" \
   -o "${ORFS_OUT}" \
   -w 0 \
   -r "${FGSP_TRAIN_DIR}" \
-  -t "${TRAIN_FILE_NAME}" \
-  -c 1 \
+  -t illumina_5 \
+  -m 2048 \
   -p "${NSLOTS}" 2>&1 | handleoutput
 
   if [[ $? != 0 ]]; then
-    echo "FragGeneScanPlusPlus failed"
+    echo "FragGeneScanPlus failed"
     exit 1
   fi
 
   INPUT_ORFS="${ORFS_OUT}".faa
-
+  
    if [[ ! -f "${INPUT_ORFS}" ]]; then
-    echo "FragGeneScanPlusPlus failed (no output file generated)"
+    echo "FragGeneScanPlus failed"
     exit 1
   fi
 
@@ -453,7 +408,7 @@ if [[ $? != 0 ]]; then
 fi
 
 if [[ ! -f "${UOUT}" ]]; then
-  echo "uproc_prot failed (no output file generated)"
+  echo "uproc_prot failed"
   exit 1
 fi
 
@@ -463,40 +418,18 @@ fi
 
 COUNTS="${THIS_JOB_TMP_DIR}/${OUTPUT_PREFIX}"_single_cogs_count.tsv
 
-cut -f1,3,4,5 -d"," "${UOUT}" | \
+cut -f3,4 -d"," "${UOUT}" | \
 awk 'BEGIN {OFS="\t"; FS=","} {
-
-  if (array_score[$1]) {
-
-    if ($4 > array_score[$1]) {
-      array_score[$1] = $4
-      array_line[$1, $3] = $2
-    }
-
-  } else {
-
-   array_score[$1] = $4
-   array_line[$1, $3] = $2
-
-  }
-
+     array_length[$2] = $1 + array_length[$2]
 } END {
-
   printf "%s\t%s\n", "cog","cov"
-
-  for (combined in array_line) {
-    split(combined, separate, SUBSEP)
-    array_length[separate[2]]= array_length[separate[2]] + array_line[combined]
-  }
-
   for ( c in array_length ) {
     printf "%s\t%s\n", c,array_length[c]
   }
-
 }' > "${COUNTS}"
 
 if [[ $? != 0 ]]; then
-  echo "Formatting to *_counts.tsv failed (prot annotation)"
+  echo "formatting to *_counts,tsv failed (prot annotation)"
   exit 1
 fi
 
@@ -531,7 +464,7 @@ fi
   x <- COGS_TBL[i,"cov"]/COG_LENGTHS\$value
   cov_mean <- mean(x)
   COMPUT_AGS <- round((BP_TOTAL)/cov_mean, digits = 3)
-  COMPUT_NG <- round(cov_mean, digits = 3)
+  COMPUT_NG <- round(cov_mean, digits = 3) 
 
   OUTPUT <- data.frame(Sample = SAMPLE, AGS = COMPUT_AGS, NGs = COMPUT_NG, BPs = BP_TOTAL)
 
@@ -543,14 +476,14 @@ RSCRIPT
 ) 2>&1 | handleoutput
 
 if [[ $? != 0 ]]; then
-  echo "Compute AGS failed (r script)"
+  echo "r code average genome size computation failed"
   exit 1
 fi
 
 if [[ ! -f ${THIS_JOB_TMP_DIR}/${OUTPUT_PREFIX}_ags.tsv ]]; then
-  echo "Compute AGS failed (no output file generated)"
+  echo "r code average genome size computation failed"
   exit 1
-fi
+fi  
 
 ###############################################################################
 # 13. Clean up
@@ -560,8 +493,8 @@ if [[ "${SAVE_COMPLEMENTARY_DATA}" =~ [F|f] ]]; then
 
   rm "${COUNTS}"
   rm "${UOUT}"
-
-  if [[ -n "${BBDUKFILTER}" && -f "${INPUT_FNA}" ]]; then
+  
+  if [[ -n "${LENGTH}" && -f "${INPUT_FNA}" ]]; then
     rm "${INPUT_FNA}"
   fi
 

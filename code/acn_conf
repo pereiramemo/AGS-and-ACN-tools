@@ -18,6 +18,3 @@ REF="${DB}/rRNA_databases/silva-bac-16s-id90.fasta,\
 ${DB}/index/silva-bac-16s-db:${DB}/rRNA_databases/silva-arc-16s-id95.fasta,\
 ${DB}/index/silva-arc-16s-db"
 
-# parameters
-SMRNA_MEM="1000"
-

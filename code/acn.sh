@@ -14,27 +14,25 @@ set -o pipefail
 
 show_usage(){
   cat <<EOF
-See run_acn.sh . . . --help
-  Usage: ./acn.sh <input fna> <ags tsv> <input smrana> <output directory> <options>
-  [-h|--help] [-e|--evalue NUM] [-id|--identity NUM]
-  [-l|--length NUM] [-ls|--length_ssu NUM] [-o|--output_prefix CHAR] 
-  [-s|--sample_name CHAR] [-scd|--save_completentary_data t|f] [-t|--nslots NUM]
+Usage: ./run_acn.sh <input fna> <ags tsv> <input smrana> <output directory> <options>
+ 
+--help                          print this help
+--evalue NUM                    e-value to be used in 16S rRNA filtering (default 1e-15)
+--min_identity NUM              minimum identity to be used in 16S rRNA filtering (default 85)
+--min_length NUM                minimum length to be used in 16S rRNA filtering (default 30)
+--length_ssu NUM                16S rRNA reference length (default E. cloi: 1542bp)
+--nslots NUM                    number of slots (used in SortMeRNA) (default 2)
+--output_prefix CHAR            prefix output name (default sample name)
+--overwrite t|f                 overwrite current directory (default f)
+--sample_name CHAR              sample name (default input file name)
+--save_complementary_data t|f   save data used to compute the average genome size (default f)
+--smrna_mem NUM                 Mbytes used to load reads into memory (used in SortMeRNA) (default 1024; maximum 4096)
+--verbose t|f                   run verbosely (default f)
 
--h, --help print this help
--e, --evalue  maximum evalue to be used in 16S rRNA filtering (default 1e-15)
--id, --identity minimum identity to be used in 16S rRNA filtering (default 85)
--l, --length minimum length to be used in 16S rRNA filtering (default 30)
--ls, --length_ssu 16S rRNA reference length (default E. cloi: 1542bp)
--o, --output_prefix prefix output name (default sample name)
--s, --sample_name sample name (default input file name)
--scd, --save_complementary_data t or f, save data used to compute the average genome size (default f)
--t, --nslots  number of slots (used in SortMeRNA) (default 2)
--v, --verbose   t or f, run verbosely (default f)
--w, --overwrite t or f, overwrite current directory (default f)
 
-<input smrna>: precomputed sortmerna blast output
+<input fna>: fasta file to annotate the 16S rRNA genes (optional)
 <ags tsv>: ags.sh output (used to parse the NGs)
-<input fasta>: fasta file to annotate the 16S rRNA genes (optional)
+<input smrna>: precomputed sortmerna blast output
 
 EOF
 }
@@ -45,17 +43,15 @@ EOF
 
 while :; do
   case "${1}" in
-
-    -h|-\?|--help) # Call a "show_help" function to display a synopsis, then
-                   # exit.
+    --help) # Call a "show_help" function to display a synopsis, then exit.
     show_usage
     exit 1;
     ;;
 #############
-  -e|--evalue)
+  --evalue)
   if [[ -n "${2}" ]]; then
-   EVALUE="${2}"
-   shift
+    EVALUE="${2}"
+    shift
   fi
   ;;
   --evalue=?*)
@@ -65,7 +61,7 @@ while :; do
   printf 'Using default environment.\n' >&2
   ;;
 #############
-  -i|--input_fna)
+  --input_fna)
   if [[ -n "${2}" ]]; then
    INPUT_FNA="${2}"
    shift
@@ -79,7 +75,7 @@ while :; do
   exit 1
   ;;
 #############
-  -i|--input_ags)
+  --input_ags)
   if [[ -n "${2}" ]]; then
    INPUT_AGS="${2}"
    shift
@@ -93,7 +89,7 @@ while :; do
   exit 1
   ;;  
 #############
-  -is|--input_smrna)
+  --input_smrna)
   if [[ -n "${2}" ]]; then
    INPUT_SMRNA="${2}"
    shift
@@ -106,63 +102,63 @@ while :; do
   printf 'Using default environment.\n' >&2
   ;;
 #############
-  -id|--identity)
+  --min_identity)
   if [[ -n "${2}" ]]; then
-   IDENTITY="${2}"
-   shift
+    MIN_IDENTITY="${2}"
+    shift
   fi
   ;;
-  --identity=?*)
-  IDENTITY="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  --min_identity=?*)
+  MIN_IDENTITY="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
-  --identity=) # Handle the empty case
+  --min_identity=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;;  
 #############
-  -l|--length)
+  --min_length)
   if [[ -n "${2}" ]]; then
-   LENGTH="${2}"
+   MIN_LENGTH="${2}"
    shift
   fi
   ;;
-  --length=?*)
-  LENGTH="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  --min_length=?*)
+  MIN_LENGTH="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
-  --length=) # Handle the empty case
-    printf 'Using default environment.\n' >&2
+  --min_length=) # Handle the empty case
+  printf 'Using default environment.\n' >&2
   ;;
 #############
-  -ls|--length_ssu)
+  --length_ssu)
   if [[ -n "${2}" ]]; then
-   LENGTH_SSU="${2}"
-   shift
+    LENGTH_SSU="${2}"
+    shift
   fi
   ;;
   --length_ssu=?*)
   LENGTH_SSU="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
   --length_ssu=) # Handle the empty case
-    printf 'Using default environment.\n' >&2
+  printf 'Using default environment.\n' >&2
   ;;  
 #############
-  -o|--output_prefix)
+  --output_prefix)
   if [[ -n "${2}" ]]; then
-   OUTPUT_PREFIX="${2}"
-   shift
+    OUTPUT_PREFIX="${2}"
+    shift
   fi
   ;;
   --output_prefix=?*)
   OUTPUT_PREFIX="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
   --output_prefix=) # Handle the empty case
-    printf 'Using default environment.\n' >&2
+  printf 'Using default environment.\n' >&2
   ;;
 #############
-  -od|--outdir)
-   if [[ -n "${2}" ]]; then
-     OUTDIR_EXPORT="${2}"
-     shift
-   fi
+  --outdir)
+  if [[ -n "${2}" ]]; then
+    OUTDIR_EXPORT="${2}"
+    shift
+  fi
   ;;
   --outdir=?*)
   OUTDIR_EXPORT="${1#*=}" # Delete everything up to "=" and assign the 
@@ -172,10 +168,10 @@ while :; do
   printf 'Using default environment.\n' >&2
   ;;  
 #############
-  -s|--sample_name)
+  --sample_name)
   if [[ -n "${2}" ]]; then
-   SAMPLE="${2}"
-   shift
+    SAMPLE="${2}"
+    shift
   fi
   ;;
   --sample_name=?*)
@@ -185,38 +181,38 @@ while :; do
   printf 'Using default environment.\n' >&2
   ;;
 #############
-  -scd|--save_complementary_data)
+  --save_complementary_data)
   if [[ -n "${2}" ]]; then
-   SAVE_COMPLEMENTARY_DATA="${2}"
-   shift
+    SAVE_COMPLEMENTARY_DATA="${2}"
+    shift
   fi
   ;;
   --save_complementary_data=?*)
-  SAVE_COMPLEMENTARY_DATA="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  SAVE_COMPLEMENTARY_DATA="${1#*=}" # Delete everything up to "=" and assign the 
+                                    # remainder.
   ;;
   --save_complementary_data=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;;
- #############
-  -t|--nslots)
-   if [[ -n "${2}" ]]; then
-     NSLOTS="${2}"
-     shift
-   fi
+#############
+  --nslots)
+  if [[ -n "${2}" ]]; then
+    NSLOTS="${2}"
+    shift
+  fi
   ;;
   --nslots=?*)
-  NSLOTS="${1#*=}" # Delete everything up to "=" and assign the
-# remainder.
+  NSLOTS="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
   --nslots=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;;
 #############
--v|--verbose)
-   if [[ -n "${2}" ]]; then
-     VERBOSE="${2}"
-     shift
-   fi
+  --verbose)
+  if [[ -n "${2}" ]]; then
+    VERBOSE="${2}"
+    shift
+  fi
   ;;
   --verbose=?*)
   VERBOSE="${1#*=}" # Delete everything up to "=" and assign the
@@ -226,31 +222,43 @@ while :; do
   printf 'Using default environment.\n' >&2
   ;;
 #############  
-  -w|--overwrite)
-   if [[ -n "${2}" ]]; then
-     OVERWRITE="${2}"
-     shift
-   fi
+  --overwrite)
+  if [[ -n "${2}" ]]; then
+    OVERWRITE="${2}"
+    shift
+  fi
   ;;
   --overwrite=?*)
-  OVERWRITE="${1#*=}" # Delete everything up to "=" and assign the
-# remainder.
+  OVERWRITE="${1#*=}" # Delete everything up to "=" and assign the remainder.
   ;;
   --overwrite=) # Handle the empty case
   printf 'Using default environment.\n' >&2
   ;; 
-############
-    --)              # End of all options.
+#############  
+  --smrna_mem)
+  if [[ -n "${2}" ]]; then
+    SMRNA_MEM="${2}"
     shift
-    break
-    ;;
-    -?*)
-    printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
-    ;;
-    *) # Default case: If no more options then break out of the loop.
-    break
-    esac
-    shift
+  fi
+  ;;
+  --smrna_mem=?*)
+  SMRNA_MEM="${1#*=}" # Delete everything up to "=" and assign the remainder.
+  ;;
+  --smrna_mem=) # Handle the empty case
+  printf 'Using default environment.\n' >&2
+  ;;  
+############ # End of all options.
+  --)              
+  shift
+  break
+  ;;
+  -?*)
+  printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+  ;;
+  *) # Default case: If no more options then break out of the loop.
+  break
+  esac
+  shift
 done
 
 ###############################################################################
@@ -259,13 +267,13 @@ done
 
 if [[ ! -f "${INPUT_FNA}" ]]; then
   echo "Please input the fna file"
-  echo  "See: acn.sh --help"
+  echo  "See: run_acn.sh . . . --help"
   exit 1
 fi
 
 if [[ ! -f "${INPUT_AGS}" ]]; then
   echo "Please input the ags tsv file"
-  echo  "See: acn.sh --help"
+  echo  "See: run_acn.sh . . . --help"
   exit 1
 fi
 
@@ -295,20 +303,24 @@ if [[ -z "${NSLOTS}" ]]; then
   NSLOTS=2
 fi
 
-if [[ -z "${IDENTITY}" ]]; then
-  IDENTITY=85
+if [[ -z "${MIN_IDENTITY}" ]]; then
+  MIN_IDENTITY=85
 fi
 
 if [[ -z "${EVALUE}" ]]; then
   EVALUE=1e-15
 fi
 
-if [[ -z "${LENGTH}" ]]; then
-  LENGTH=30
+if [[ -z "${MIN_LENGTH}" ]]; then
+  MIN_LENGTH=30
 fi
 
 if [[ -z "${LENGTH_SSU}" ]]; then
   LENGTH_SSU=1542
+fi
+
+if [[ -z "${SMRNA_MEM}" ]]; then
+  SMRNA_MEM=1024
 fi
 
 ###############################################################################
@@ -317,7 +329,7 @@ fi
 
 if [[ -d "${OUTDIR_LOCAL}/${OUTDIR_EXPORT}" ]]; then
   if [[ "${OVERWRITE}" != "t" ]]; then
-    echo "${OUTDIR_EXPORT} already exist. Use \"--overwrite t\" to overwrite."
+    echo "${OUTDIR_EXPORT} already exists. Use \"--overwrite t\" to overwrite"
     exit
   fi
 fi
@@ -361,10 +373,10 @@ fi
 # 9. Parse ags.sh output
 ###############################################################################
 
-NG=$( cat "${INPUT_AGS}" | sed -n 2p | cut -f3)
+NG=$(cat "${INPUT_AGS}" | sed -n 2p | cut -f3)
 
 if [[ -z "${NG}" ]]; then
-  echo "parsing ags.sh output failed"
+  echo "Parsing ags.sh output failed"
   exit 1
 fi
 
@@ -391,14 +403,14 @@ SMRNA_OUT="${THIS_JOB_TMP_DIR}/${OUTPUT_PREFIX}"_smrna
     --best 1  2>&1 | handleoutput
 
   if [[ $? != 0 ]]; then
-    echo "sormerna failed"
+    echo "SortMeRNA failed"
     exit 1
   fi
 
   INPUT_SMRNA="${SMRNA_OUT}".blast
 
    if [[ ! -f "${INPUT_SMRNA}" ]]; then
-    echo "sormerna failed"
+    echo "SortMeRNA failed (no output file generated)"
     exit 1
   fi
   
@@ -410,7 +422,7 @@ fi
 
 echo "Computing ACN ..." 2>&1 | handleoutput
 
-COVERAGE_16S=$( awk -v l="${LENGTH}" -v i="${IDENTITY}" \
+COVERAGE_16S=$( awk -v l="${MIN_LENGTH}" -v i="${MIN_IDENTITY}" \
                     -v e="${EVALUE}" -v s=${LENGTH_SSU} '{
 
   if ( $11 <= e && $4 >= l && $3 >= i ) {
@@ -423,15 +435,15 @@ COVERAGE_16S=$( awk -v l="${LENGTH}" -v i="${IDENTITY}" \
 
   print n_nuc_tot/s
 
-} ' "${INPUT_SMRNA}")
+}' "${INPUT_SMRNA}")
 
 if [[ $? != 0 ]]; then
-  echo "compute 16S coverage failed"
+  echo "Compute 16S rRNA coverage failed"
   exit 1
 fi
 
 if [[ -z "${COVERAGE_16S}" ]]; then
-  echo "compute 16S coverage failed (awk)"
+  echo "Compute 16S rRNA coverage failed (awk)"
   exit 1
 fi
 
@@ -442,7 +454,7 @@ fi
 ACN=$(echo "scale=6; ${COVERAGE_16S}/(${NG})" | bc -l)
 
 if [[ -z "${ACN}" ]]; then
-  echo "compute 16S coverage failed (bc)"
+  echo "Compute 16S rRNA coverage failed (bc)"
   exit 1
 fi
 
@@ -468,5 +480,3 @@ fi
 ###############################################################################
 
 rsync -a --delete "${THIS_JOB_TMP_DIR}" "${OUTDIR_LOCAL}"
-
-

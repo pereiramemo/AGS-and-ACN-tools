@@ -19,7 +19,7 @@ uproc_version="1.2.0"
 uproc_prot="${SOFTWARE_DIR}/uproc-${uproc_version}/uproc-prot"
 uproc_dna="${SOFTWARE_DIR}/uproc-${uproc_version}/uproc-dna"
 uproc_orf="${SOFTWARE_DIR}/uproc-${uproc_version}/uproc-orf"
-fraggenescanplus="${SOFTWARE_DIR}/FragGeneScanPlusPlus-master/build/FGS++"
+fraggenescanplusplus="${SOFTWARE_DIR}/FragGeneScanPlusPlus-master/FGSpp"
 bbduk_version="38.30"
 bbduk="${SOFTWARE_DIR}/bbmap/bbduk.sh"
 
