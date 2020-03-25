@@ -18,22 +18,22 @@ if [[ "$#" -lt 3 ]]; then
 fi
 
 # handle input fna file
-INPUT_FNA=$(basename $1)
-INPUT_DIR=$(dirname $(realpath $1))
+INPUT_FNA=$(basename "${1}")
+INPUT_DIR=$(dirname $(realpath "${1}"))
 shift
 
 # handle input ags tsv file
-INPUT_AGS=$(basename $1)
+INPUT_AGS=$(basename "${1}")
 shift
 
 # handle sortmerna output
-if [[ -f $1 ]]; then
-  INPUT_SMRNA=$(basename $1)
+if [[ -f "${1}" ]]; then
+  INPUT_SMRNA=$(basename "${1}")
   shift
 fi
   
-OUTPUT_DIR=$( dirname $(realpath $1))
-OUTPUT=$(basename $1)
+OUTPUT_DIR=$(dirname $(realpath "${1}"))
+OUTPUT=$(basename "${1}")
 shift
 
 # links within the container
@@ -42,8 +42,8 @@ CONTAINER_DST_DIR=/output
 
 if [[ -n "${INPUT_SMRNA}" ]]; then
   docker run \
-    --volume ${INPUT_DIR}:${CONTAINER_SRC_DIR}:rw \
-    --volume ${OUTPUT_DIR}:${CONTAINER_DST_DIR}:rw \
+    --volume "${INPUT_DIR}":"${CONTAINER_SRC_DIR}":rw \
+    --volume "${OUTPUT_DIR}":"${CONTAINER_DST_DIR}":rw \
     --detach=false \
     --rm \
     --user $(id -u):$(id -g) \
@@ -55,8 +55,8 @@ if [[ -n "${INPUT_SMRNA}" ]]; then
     $@
 else
 docker run \
-    --volume ${INPUT_DIR}:${CONTAINER_SRC_DIR}:rw \
-    --volume ${OUTPUT_DIR}:${CONTAINER_DST_DIR}:rw \
+    --volume "${INPUT_DIR}":"${CONTAINER_SRC_DIR}":rw \
+    --volume "${OUTPUT_DIR}":"${CONTAINER_DST_DIR}":rw \
     --detach=false \
     --rm \
     --user $(id -u):$(id -g) \
@@ -66,6 +66,3 @@ docker run \
     --outdir "${OUTPUT}" \
     $@
 fi
-
-
-
