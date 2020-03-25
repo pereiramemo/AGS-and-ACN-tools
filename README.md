@@ -9,7 +9,7 @@ Before running ags.sh and acn.sh tools, it is necessary to install [docker](http
 
 Then just clone the GitHub repository:
 ```
-git clone git@github.com:pereiramemo/AGS-and-ACN-tools.git
+git clone https://github.com/pereiramemo/AGS-and-ACN-tools.git
 ```
 
 The ags.sh and acn.sh are distributed in two different docker images which will be downloaded automatically from [dockerhub](https://hub.docker.com/) the first time you run the run_ags.sh and run_acn.sh scripts.
