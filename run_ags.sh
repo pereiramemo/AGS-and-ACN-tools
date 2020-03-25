@@ -60,6 +60,3 @@ docker run \
     --outdir "${OUTPUT}" \
     $@
 fi
-
-
-

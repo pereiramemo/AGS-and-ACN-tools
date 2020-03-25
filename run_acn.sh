@@ -3,22 +3,18 @@
 set -o errexit
 
 function realpath() {
-  CURRENT_DIR=$( pwd )
-  DIR=$( dirname $1 );
-  FILE=$( basename $1 )
-  cd "${DIR}";
-  echo $( pwd )/"${FILE}"
+  CURRENT_DIR=$(pwd)
+  DIR=$(dirname "${1}")
+  FILE=$(basename "${1}")
+  cd "${DIR}"
+  echo $(pwd)/"${FILE}"
   cd "${CURRENT_DIR}"
 }
 
 # check input parameters
-if [[ "$#" -lt 2 ]]; then
+if [[ "$#" -lt 3 ]]; then
   echo -e "Missing parameters.\nSee run_acn.sh . . . --help"
   exit
-fi
-
-if [[ ! -f $1 ]]; then
-  echo -e "Missing input file\nSee run_acn.sh . . . --help"
 fi
 
 # handle input fna file
@@ -40,7 +36,7 @@ OUTPUT_DIR=$( dirname $(realpath $1))
 OUTPUT=$(basename $1)
 shift
 
-# Links within the container
+# links within the container
 CONTAINER_SRC_DIR=/input
 CONTAINER_DST_DIR=/output
 
