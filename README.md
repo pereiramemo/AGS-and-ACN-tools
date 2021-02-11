@@ -2,7 +2,7 @@
 Here, we present the ags.sh and acn.sh tools dedicated to the computation of the Average Genome Size (AGS) and 16S rRNA gene Average Copy Number (ACN), respectively. The ags.sh and acn.sh tools compute these metagenomic traits based on the (ultra-fast) annotation of 35 universally distributed single-copy genes in unassembled metagenomic data.
 
 ### Citation
-Pereira-Flores, E., Glöckner F. O., and Fernandez-Guerra A. Fast and accurate average genome size and 16S rRNA gene average copy number computation in metagenomic data. BMC Bioinformatics. 2019;20(1):453. doi:10.1186/s12859-019-3031-y.
+Pereira-Flores, E., Glöckner F. O., and Fernandez-Guerra A. Fast and accurate average genome size and 16S rRNA gene average copy number computation in metagenomic data. BMC Bioinformatics. 2019;20(1):453. doi:[10.1186/s12859-019-3031-y.](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-3031-y)
 
 ### Installation
 Before running ags.sh and acn.sh tools, it is necessary to install [docker](https://www.docker.com/).
