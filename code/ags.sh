@@ -23,7 +23,7 @@ Usage: ./run_ags.sh <input fna> <input orfs> <output directory> <options>
 --nslots NUM                    number of slots (used in BBDuk, UProC, and FragGeneScanPlusPlus) (default 2)
 --output_prefix CHAR            prefix output name (default sample name)
 --overwrite t|f                 overwrite current directory (default f)
---sample_name                   sample name (default input file name)
+--sample_name CHAR              sample name (default input file name)
 --save_complementary_data t|f   save data used to compute the average genome size (default f)
 --train_file_name CHAR          file name containing the model parameters (used in FragGeneScanPlusPlus) (default illumina_5)
 --verbose t|f                   run verbosely (default f)
